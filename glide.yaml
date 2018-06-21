@@ -1,0 +1,39 @@
+package: .
+import:
+- package: github.com/Sirupsen/logrus
+  version: ^1.0.5
+- package: github.com/aufaitio/listener
+  subpackages:
+  - apis
+  - app
+  - daos
+  - errors
+  - models
+  - services
+- package: github.com/autfaitio/listener
+  subpackages:
+  - errors
+- package: github.com/go-ozzo/ozzo-routing
+  version: ^2.1.4
+  subpackages:
+  - access
+  - auth
+  - content
+  - cors
+  - fault
+- package: github.com/go-ozzo/ozzo-validation
+  version: ^3.3.0
+- package: github.com/lib/pq
+- package: github.com/mongodb/mongo-go-driver
+  version: ^0.0.7
+  subpackages:
+  - mongo
+- package: github.com/spf13/viper
+  version: ^1.0.2
+- package: gopkg.in/yaml.v2
+  version: ^2.2.1
+testImport:
+- package: github.com/stretchr/testify
+  version: ^1.2.2
+  subpackages:
+  - assert
