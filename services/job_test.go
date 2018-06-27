@@ -28,17 +28,15 @@ func TestJobService_Get(t *testing.T) {
 
 func TestJobService_Create(t *testing.T) {
 	s := NewJobService(newMockJobDAO())
-	job, err := s.Create(nil, &models.Job{
-		Name: "ddd",
-	})
+	job, err := s.Create(nil, createJob("ddd", "testing", "1.1.1"))
 	if assert.Nil(t, err) && assert.NotNil(t, job) {
-		assert.Equal(t, 4, job.ID)
+		assert.Equal(t, int64(4), job.ID)
 		assert.Equal(t, "ddd", job.Name)
 	}
 
 	// dao error
 	_, err = s.Create(nil, &models.Job{
-		Id:   100,
+		ID:   100,
 		Name: "ddd",
 	})
 	assert.NotNil(t, err)
@@ -52,11 +50,9 @@ func TestJobService_Create(t *testing.T) {
 
 func TestJobService_Update(t *testing.T) {
 	s := NewJobService(newMockJobDAO())
-	job, err := s.Update(nil, 2, &models.Job{
-		Name: "ddd",
-	})
+	job, err := s.Update(nil, 2, createJob("ddd", "a", "1.2.4"))
 	if assert.Nil(t, err) && assert.NotNil(t, job) {
-		assert.Equal(t, 2, job.ID)
+		assert.Equal(t, int64(2), job.ID)
 		assert.Equal(t, "ddd", job.Name)
 	}
 
@@ -77,7 +73,7 @@ func TestJobService_Delete(t *testing.T) {
 	s := NewJobService(newMockJobDAO())
 	job, err := s.Delete(nil, 2)
 	if assert.Nil(t, err) && assert.NotNil(t, job) {
-		assert.Equal(t, 2, job.ID)
+		assert.Equal(t, int64(2), job.ID)
 		assert.Equal(t, "bbb", job.Name)
 	}
 
@@ -93,58 +89,73 @@ func TestJobService_Query(t *testing.T) {
 	}
 }
 
-func newMockJobDAO() jobDAO {
-	return &mockJobDAO{
-		records: []models.Job{
-			{ID: 1, Name: "aaa"},
-			{ID: 2, Name: "bbb"},
-			{ID: 3, Name: "ccc"},
+func createJob(name string, depName string, depVersion string) *models.Job {
+	return &models.Job{
+		Name:  name,
+		State: models.Idle,
+		Dependencies: []models.PublishedDependency{
+			models.PublishedDependency{Name: depName, Version: depVersion},
 		},
 	}
 }
 
-type mockJobDAO struct {
-	records []models.Job
+func newMockJobDAO() jobDAO {
+	jobList := []*models.Job{
+		createJob("aaa", "test", "1.2.3"),
+		createJob("bbb", "test", "2.2.3"),
+		createJob("ccc", "test", "3.2.3"),
+	}
+
+	for i, job := range jobList {
+		job.ID = int64(i + 1)
+	}
+
+	return &mockJobDAO{records: jobList}
 }
 
-func (m *mockJobDAO) Get(rs app.RequestScope, id int) (*models.Job, error) {
+type mockJobDAO struct {
+	records []*models.Job
+}
+
+func (m *mockJobDAO) Get(rs app.RequestScope, id int64) (*models.Job, error) {
 	for _, record := range m.records {
 		if record.ID == id {
-			return &record, nil
+			return record, nil
 		}
 	}
 	return nil, errors.New("not found")
 }
 
-func (m *mockJobDAO) Query(rs app.RequestScope, offset, limit int) ([]models.Job, error) {
+func (m *mockJobDAO) Query(rs app.RequestScope, offset, limit int) ([]*models.Job, error) {
 	return m.records[offset : offset+limit], nil
 }
 
-func (m *mockJobDAO) Count(rs app.RequestScope) (int, error) {
-	return len(m.records), nil
+func (m *mockJobDAO) Count(rs app.RequestScope) (int64, error) {
+	return int64(len(m.records)), nil
 }
 
 func (m *mockJobDAO) Create(rs app.RequestScope, job *models.Job) error {
 	if job.ID != 0 {
 		return errors.New("Id cannot be set")
 	}
-	job.ID = len(m.records) + 1
-	m.records = append(m.records, *job)
+	job.ID = int64(len(m.records) + 1)
+
+	m.records = append(m.records, job)
 	return nil
 }
 
-func (m *mockJobDAO) Update(rs app.RequestScope, id int, job *models.Job) error {
+func (m *mockJobDAO) Update(rs app.RequestScope, id int64, job *models.Job) error {
 	job.ID = id
 	for i, record := range m.records {
 		if record.ID == id {
-			m.records[i] = *job
+			m.records[i] = job
 			return nil
 		}
 	}
 	return errors.New("not found")
 }
 
-func (m *mockJobDAO) Delete(rs app.RequestScope, id int) error {
+func (m *mockJobDAO) Delete(rs app.RequestScope, id int64) error {
 	for i, record := range m.records {
 		if record.ID == id {
 			m.records = append(m.records[:i], m.records[i+1:]...)

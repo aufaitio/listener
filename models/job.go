@@ -5,20 +5,29 @@ import (
 	"github.com/mongodb/mongo-go-driver/bson"
 )
 
-// PublishedDependency represents a packages dependencies
-type PublishedDependency struct {
-	Name    string `json:"name" bson:"name"`
-	Version string `json:"version" bson:"version"`
-}
+type (
+	// PublishedDependency represents a packages dependencies
+	PublishedDependency struct {
+		Name    string `json:"name" bson:"name"`
+		Version string `json:"version" bson:"version"`
+	}
 
-// Job represents Builder Job.
-type Job struct {
-	Dependencies []PublishedDependency `json:"dependencies" bson:"dependencies"`
-	Expiration   string                `json:"expiration" bson:"expiration"`
-	ID           int64                 `json:"id" bson:"_id"`
-	Name         string                `json:"name" bson:"name"`
-	State        string                `json:"state" bson:"state"`
-}
+	// Job represents Builder Job.
+	Job struct {
+		Dependencies []PublishedDependency `json:"dependencies" bson:"dependencies"`
+		Expiration   string                `json:"expiration" bson:"expiration"`
+		ID           int64                 `json:"id" bson:"_id"`
+		Name         string                `json:"name" bson:"name"`
+		State        string                `json:"state" bson:"state"`
+	}
+)
+
+const (
+	// Idle defines a job in an idle state
+	Idle string = "IDLE"
+	// InProgress defines a job that is in progress
+	InProgress string = "IN_PROGRESS"
+)
 
 // Validate validates the repository fields.
 func (job Job) Validate() error {
