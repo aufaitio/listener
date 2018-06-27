@@ -1,5 +1,8 @@
 # listener
 
+[![Build Status](https://travis-ci.com/aufaitio/listener.svg?branch=master)](https://travis-ci.com/aufaitio/listener)
+[![Coverage Status](https://coveralls.io/repos/github/aufaitio/listener/badge.svg?branch=master)](https://coveralls.io/github/aufaitio/listener?branch=master)
+
 Micro service that manages registered repositories and their dependencies via service webhooks.
 
 ## Config
