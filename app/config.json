@@ -1,0 +1,60 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "messaging": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {
+                "clientID": {
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "type": "string"
+                },
+                "serviceName": {
+                    "type": "string",
+                    "enum": [
+                        "hipchat"
+                    ]
+                },
+                "url": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "clientID",
+                "clientSecret",
+                "type",
+                "url"
+            ]
+        },
+        "versionControl": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {
+                "clientID": {
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "type": "string"
+                },
+                "serviceName": {
+                    "type": "string",
+                    "enum": [
+                        "stash"
+                    ]
+                },
+                "url": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "clientID",
+                "clientSecret",
+                "type",
+                "url"
+            ]
+        }
+    }
+}
