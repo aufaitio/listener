@@ -1,35 +1,28 @@
-package: .
+package: github.com/aufaitio/listener
 import:
 - package: github.com/Sirupsen/logrus
   version: ^1.0.5
-- package: github.com/aufaitio/listener
-  subpackages:
-  - apis
-  - app
-  - daos
-  - errors
-  - models
-  - services
-- package: github.com/autfaitio/listener
-  subpackages:
-  - errors
+- package: github.com/docopt/docopt-go
+  version: ^0.6.2
 - package: github.com/go-ozzo/ozzo-routing
   version: ^2.1.4
   subpackages:
   - access
-  - auth
   - content
   - cors
   - fault
 - package: github.com/go-ozzo/ozzo-validation
-  version: ^3.3.0
-- package: github.com/lib/pq
+  version: ^3.4.0
 - package: github.com/mongodb/mongo-go-driver
   version: ^0.0.7
   subpackages:
+  - bson
   - mongo
 - package: github.com/spf13/viper
   version: ^1.0.2
+- package: golang.org/x/net
+  subpackages:
+  - context
 - package: gopkg.in/yaml.v2
   version: ^2.2.1
 testImport:
