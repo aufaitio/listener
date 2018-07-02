@@ -2,6 +2,7 @@ package daos
 
 import (
 	"context"
+	"github.com/mongodb/mongo-go-driver/mongo"
 
 	"github.com/aufaitio/listener/app"
 	"github.com/aufaitio/listener/models"
@@ -96,14 +97,49 @@ func (dao *RepositoryDAO) Count(rs app.RequestScope) (int64, error) {
 
 // Query retrieves the repository records with the specified offset and limit from the database.
 func (dao *RepositoryDAO) Query(rs app.RequestScope, offset, limit int) ([]*models.Repository, error) {
+	return dao.query(rs, offset, limit, bson.NewDocument())
+}
+
+// QueryByDependency queries by dependency.
+func (dao *RepositoryDAO) QueryByDependency(rs app.RequestScope, dependencyName string) ([]*models.Repository, error) {
+	return dao.query(rs, 0, 0, bson.NewDocument(
+		bson.EC.SubDocumentFromElements("dependencies",
+			bson.EC.ArrayFromElements("$in",
+				bson.VC.DocumentFromElements(bson.EC.String("name", dependencyName)),
+			),
+		),
+	))
+}
+
+// Query retrieves the repository records with the specified offset and limit from the database.
+func (dao *RepositoryDAO) query(rs app.RequestScope, offset, limit int, filter *bson.Document) ([]*models.Repository, error) {
+	var (
+		cursor mongo.Cursor
+		err    error
+	)
 	repositoryList := []*models.Repository{}
 	col := rs.DB().Collection("repository")
 	ctx := context.Background()
 
-	cursor, err := col.Find(
-		ctx,
-		bson.NewDocument(),
-	)
+	if limit > 0 {
+		cursor, err = col.Find(
+			ctx,
+			filter,
+			mongo.Opt.Limit(int64(limit)),
+			mongo.Opt.Skip(int64(offset)),
+		)
+	} else {
+		cursor, err = col.Find(
+			ctx,
+			filter,
+			mongo.Opt.Skip(int64(offset)),
+		)
+	}
+
+	if err != nil {
+		return repositoryList, err
+	}
+
 	defer cursor.Close(ctx)
 	elm := bson.NewDocument()
 

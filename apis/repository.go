@@ -28,8 +28,10 @@ type (
 // ServeRepositoryResource sets up the routing of repository endpoints and the corresponding handlers.
 func ServeRepositoryResource(rg *routing.RouteGroup, service repositoryService) {
 	r := &repositoryResource{service}
+	// Some of these routes are probably pointless but building it like a standard REST service
 	rg.Get("/repositories/<id>", r.get)
 	rg.Get("/repositories", r.query)
+	// Sort of a post/put
 	rg.Post("/repositories", r.create)
 	rg.Put("/repositories/<id>", r.update)
 	rg.Delete("/repositories/<id>", r.delete)

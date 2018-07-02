@@ -21,15 +21,18 @@ type (
 
 	// jobResource defines the handlers for the CRUD APIs.
 	jobResource struct {
-		service jobService
+		service    jobService
+		repService repositoryService
 	}
 )
 
 // ServeJobResource sets up the routing of repository endpoints and the corresponding handlers.
-func ServeJobResource(rg *routing.RouteGroup, service jobService) {
-	r := &jobResource{service}
+func ServeJobResource(rg *routing.RouteGroup, service jobService, repService repositoryService) {
+	r := &jobResource{service, repService}
+	// Some of these routes are probably pointless but building it like a standard REST service
 	rg.Get("/jobs/<id>", r.get)
 	rg.Get("/jobs", r.query)
+	// Post is technically a post/put
 	rg.Post("/jobs", r.create)
 	rg.Put("/jobs/<id>", r.update)
 	rg.Delete("/jobs/<id>", r.delete)
@@ -69,6 +72,7 @@ func (r *jobResource) create(c *routing.Context) error {
 	if err := c.Read(&model); err != nil {
 		return err
 	}
+	// Need to query for repositories and filter on semver and then create the job
 	response, err := r.service.Create(app.GetRequestScope(c), &model)
 	if err != nil {
 		return err

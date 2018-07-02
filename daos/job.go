@@ -17,15 +17,32 @@ func NewJobDAO() *JobDAO {
 
 // Get reads the job with the specified ID from the database.
 func (dao *JobDAO) Get(rs app.RequestScope, id int64) (*models.Job, error) {
+	return dao.get(
+		rs,
+		bson.NewDocument(
+			bson.EC.Int64("id", id),
+		),
+	)
+}
+
+// GetByName reads the job with the specified name from the database.
+func (dao *JobDAO) GetByName(rs app.RequestScope, name string) (*models.Job, error) {
+	return dao.get(
+		rs,
+		bson.NewDocument(
+			bson.EC.String("name", name),
+		),
+	)
+}
+
+func (dao *JobDAO) get(rs app.RequestScope, doc *bson.Document) (*models.Job, error) {
 	var job *models.Job
 	col := rs.DB().Collection("job")
 	result := bson.NewDocument()
 
 	err := col.FindOne(
 		context.Background(),
-		bson.NewDocument(
-			bson.EC.Int64("id", id),
-		),
+		doc,
 	).Decode(result)
 
 	if err != nil {

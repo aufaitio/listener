@@ -13,6 +13,8 @@ type repositoryDAO interface {
 	Count(rs app.RequestScope) (int64, error)
 	// Query returns the list of repositories with the given offset and limit.
 	Query(rs app.RequestScope, offset, limit int) ([]*models.Repository, error)
+	// Query returns the list of repositories with the given offset and limit.
+	QueryByDependency(rs app.RequestScope, dependencyName string) ([]*models.Repository, error)
 	// Create saves a new repository in the storage.
 	Create(rs app.RequestScope, repository *models.Repository) error
 	// Update updates the repository with given ID in the storage.

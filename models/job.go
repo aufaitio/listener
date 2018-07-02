@@ -14,11 +14,11 @@ type (
 
 	// Job represents Builder Job.
 	Job struct {
-		Dependencies []PublishedDependency `json:"dependencies" bson:"dependencies"`
-		Expiration   string                `json:"expiration" bson:"expiration"`
-		ID           int64                 `json:"id" bson:"_id"`
-		Name         string                `json:"name" bson:"name"`
-		State        string                `json:"state" bson:"state"`
+		Dependencies []*PublishedDependency `json:"dependencies" bson:"dependencies"`
+		Expiration   string                 `json:"expiration" bson:"expiration"`
+		ID           int64                  `json:"id" bson:"_id"`
+		Name         string                 `json:"name" bson:"name"`
+		State        string                 `json:"state" bson:"state"`
 	}
 )
 
@@ -61,7 +61,7 @@ func NewJobFromDoc(doc *bson.Document) (*Job, error) {
 		switch keyString {
 		case "dependencies":
 			rawDepList := elm.MutableArray()
-			depList := make([]PublishedDependency, rawDepList.Len())
+			depList := make([]*PublishedDependency, rawDepList.Len())
 
 			for i := uint(0); i < uint(rawDepList.Len()); i++ {
 				elm, err := rawDepList.Lookup(i)
@@ -76,7 +76,7 @@ func NewJobFromDoc(doc *bson.Document) (*Job, error) {
 
 				depList = append(
 					depList,
-					PublishedDependency{Name: name.StringValue(), Version: version.StringValue()},
+					&PublishedDependency{Name: name.StringValue(), Version: version.StringValue()},
 				)
 			}
 
@@ -113,4 +113,14 @@ func NewDocFromJob(job *Job) *bson.Document {
 		bson.EC.Array("dependencies", depList),
 		bson.EC.String("state", job.State),
 	)
+}
+
+// NewJobFromRepository builds a job from a repository model
+func NewJobFromRepository(repository *Repository, publishedDepList []*PublishedDependency) *Job {
+	return &Job{
+		Name:         repository.Name,
+		ID:           repository.ID,
+		State:        Idle,
+		Dependencies: publishedDepList,
+	}
 }

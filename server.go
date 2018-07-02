@@ -96,9 +96,10 @@ func buildRouter(logger *logrus.Logger, db *mongo.Database) *routing.Router {
 	rg := router.Group("/v1")
 
 	repoDAO := daos.NewRepositoryDAO()
-	apis.ServeRepositoryResource(rg, services.NewRepositoryService(repoDAO))
+	repoService := services.NewRepositoryService(repoDAO)
+	apis.ServeRepositoryResource(rg, repoService)
 	jobDAO := daos.NewJobDAO()
-	apis.ServeJobResource(rg, services.NewJobService(jobDAO))
+	apis.ServeJobResource(rg, services.NewJobService(jobDAO, repoDAO), repoService)
 
 	return router
 }

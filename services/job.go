@@ -9,6 +9,8 @@ import (
 type jobDAO interface {
 	// Get returns the job with the specified job ID.
 	Get(rs app.RequestScope, id int64) (*models.Job, error)
+	// GetByName returns the job with the specified job Name.
+	GetByName(rs app.RequestScope, name string) (*models.Job, error)
 	// Count returns the number of repositories.
 	Count(rs app.RequestScope) (int64, error)
 	// Query returns the list of repositories with the given offset and limit.
@@ -23,17 +25,51 @@ type jobDAO interface {
 
 // JobService provides services related with repositories.
 type JobService struct {
-	dao jobDAO
+	dao    jobDAO
+	repDao repositoryDAO
 }
 
 // NewJobService creates a new JobService with the given job DAO.
-func NewJobService(dao jobDAO) *JobService {
-	return &JobService{dao}
+func NewJobService(dao jobDAO, repDao repositoryDAO) *JobService {
+	return &JobService{dao, repDao}
 }
 
 // Get returns the job with the specified the job ID.
 func (s *JobService) Get(rs app.RequestScope, id int64) (*models.Job, error) {
 	return s.dao.Get(rs, id)
+}
+
+// CreateJobsFromDependency creates a list of jobs from a NPM Hook dependency
+func (s *JobService) CreateJobsFromDependency(rs app.RequestScope, hook *models.NpmHook) ([]*models.Job, error) {
+	var jobList []*models.Job
+	repList, err := s.repDao.QueryByDependency(rs, hook.Name)
+
+	if err != nil {
+		return jobList, err
+	}
+
+	filterRepList := FilterByVersion(repList, hook)
+
+	for _, rep := range filterRepList {
+		job, err := s.dao.GetByName(rs, rep.Name)
+
+		if err != nil {
+			return jobList, err
+		}
+
+		publishedDep := models.PublishedDependency{Name: hook.Name, Version: hook.Version}
+
+		if job.Name != rep.Name {
+			publishedDepList := []*models.PublishedDependency{&publishedDep}
+			job = models.NewJobFromRepository(rep, publishedDepList)
+		} else {
+			job.Dependencies = append(job.Dependencies, &publishedDep)
+		}
+
+		jobList = append(jobList, job)
+	}
+
+	return jobList, nil
 }
 
 // Create creates a new job.
