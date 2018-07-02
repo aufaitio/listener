@@ -129,6 +129,10 @@ func (m *mockRepositoryDAO) Query(rs app.RequestScope, offset, limit int) ([]*mo
 	return m.records[offset : offset+limit], nil
 }
 
+func (m *mockRepositoryDAO) QueryByDependency(rs app.RequestScope, dependencyName string) ([]*models.Repository, error) {
+	return []*models.Repository{}, nil
+}
+
 func (m *mockRepositoryDAO) Count(rs app.RequestScope) (int64, error) {
 	return int64(len(m.records)), nil
 }

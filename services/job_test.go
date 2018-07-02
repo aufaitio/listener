@@ -11,12 +11,12 @@ import (
 
 func TestNewJobService(t *testing.T) {
 	dao := newMockJobDAO()
-	s := NewJobService(dao)
+	s := NewJobService(dao, newMockRepositoryDAO())
 	assert.Equal(t, dao, s.dao)
 }
 
 func TestJobService_Get(t *testing.T) {
-	s := NewJobService(newMockJobDAO())
+	s := NewJobService(newMockJobDAO(), newMockRepositoryDAO())
 	job, err := s.Get(nil, 1)
 	if assert.Nil(t, err) && assert.NotNil(t, job) {
 		assert.Equal(t, "aaa", job.Name)
@@ -27,7 +27,7 @@ func TestJobService_Get(t *testing.T) {
 }
 
 func TestJobService_Create(t *testing.T) {
-	s := NewJobService(newMockJobDAO())
+	s := NewJobService(newMockJobDAO(), newMockRepositoryDAO())
 	job, err := s.Create(nil, createJob("ddd", "testing", "1.1.1"))
 	if assert.Nil(t, err) && assert.NotNil(t, job) {
 		assert.Equal(t, int64(4), job.ID)
@@ -49,7 +49,7 @@ func TestJobService_Create(t *testing.T) {
 }
 
 func TestJobService_Update(t *testing.T) {
-	s := NewJobService(newMockJobDAO())
+	s := NewJobService(newMockJobDAO(), newMockRepositoryDAO())
 	job, err := s.Update(nil, 2, createJob("ddd", "a", "1.2.4"))
 	if assert.Nil(t, err) && assert.NotNil(t, job) {
 		assert.Equal(t, int64(2), job.ID)
@@ -70,7 +70,7 @@ func TestJobService_Update(t *testing.T) {
 }
 
 func TestJobService_Delete(t *testing.T) {
-	s := NewJobService(newMockJobDAO())
+	s := NewJobService(newMockJobDAO(), newMockRepositoryDAO())
 	job, err := s.Delete(nil, 2)
 	if assert.Nil(t, err) && assert.NotNil(t, job) {
 		assert.Equal(t, int64(2), job.ID)
@@ -82,7 +82,7 @@ func TestJobService_Delete(t *testing.T) {
 }
 
 func TestJobService_Query(t *testing.T) {
-	s := NewJobService(newMockJobDAO())
+	s := NewJobService(newMockJobDAO(), newMockRepositoryDAO())
 	result, err := s.Query(nil, 1, 2)
 	if assert.Nil(t, err) {
 		assert.Equal(t, 2, len(result))
@@ -93,8 +93,8 @@ func createJob(name string, depName string, depVersion string) *models.Job {
 	return &models.Job{
 		Name:  name,
 		State: models.Idle,
-		Dependencies: []models.PublishedDependency{
-			models.PublishedDependency{Name: depName, Version: depVersion},
+		Dependencies: []*models.PublishedDependency{
+			&models.PublishedDependency{Name: depName, Version: depVersion},
 		},
 	}
 }
@@ -120,6 +120,15 @@ type mockJobDAO struct {
 func (m *mockJobDAO) Get(rs app.RequestScope, id int64) (*models.Job, error) {
 	for _, record := range m.records {
 		if record.ID == id {
+			return record, nil
+		}
+	}
+	return nil, errors.New("not found")
+}
+
+func (m *mockJobDAO) GetByName(rs app.RequestScope, name string) (*models.Job, error) {
+	for _, record := range m.records {
+		if record.Name == name {
 			return record, nil
 		}
 	}
