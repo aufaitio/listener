@@ -27,6 +27,18 @@ func TestContextParam(t *testing.T) {
 	assert.Equal(t, "", c.Param("Xyz"))
 }
 
+func TestContextSetParam(t *testing.T) {
+	c := NewContext(nil, nil)
+	c.pnames = []string{"Name", "Age"}
+	c.pvalues = []string{"abc", "123"}
+	assert.Equal(t, "abc", c.Param("Name"))
+	c.SetParam("Name", "xyz")
+	assert.Equal(t, "xyz", c.Param("Name"))
+	assert.Equal(t, "", c.Param("unknown"))
+	c.SetParam("unknown", "xyz")
+	assert.Equal(t, "xyz", c.Param("unknown"))
+}
+
 func TestContextInit(t *testing.T) {
 	c := NewContext(nil, nil)
 	assert.Nil(t, c.Response)
@@ -56,14 +68,6 @@ func TestContextGetSet(t *testing.T) {
 	c.Set("xyz", 123)
 	assert.Equal(t, "123", c.Get("abc").(string))
 	assert.Equal(t, 123, c.Get("xyz").(int))
-	assert.Equal(t, "123", c.Value("abc"))
-	assert.Nil(t, c.Value("abcd"))
-	assert.Nil(t, c.Value(123))
-	deadline, ok := c.Deadline()
-	assert.Zero(t, deadline)
-	assert.False(t, ok)
-	assert.Nil(t, c.Done())
-	assert.Nil(t, c.Err())
 }
 
 func TestContextQueryForm(t *testing.T) {

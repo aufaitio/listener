@@ -11,7 +11,6 @@ import (
 	"net/http"
 
 	"github.com/go-ozzo/ozzo-routing"
-	"github.com/golang/gddo/httputil"
 )
 
 // MIME types
@@ -53,8 +52,7 @@ func TypeNegotiator(formats ...string) routing.Handler {
 	}
 
 	return func(c *routing.Context) error {
-		format := httputil.NegotiateContentType(c.Request, formats, formats[0])
-		DataWriters[format].SetHeader(c.Response)
+		format := NegotiateContentType(c.Request, formats, formats[0])
 		c.SetDataWriter(DataWriters[format])
 		return nil
 	}
@@ -68,12 +66,9 @@ func (w *JSONDataWriter) SetHeader(res http.ResponseWriter) {
 }
 
 func (w *JSONDataWriter) Write(res http.ResponseWriter, data interface{}) (err error) {
-	var bytes []byte
-	if bytes, err = json.Marshal(data); err != nil {
-		return
-	}
-	_, err = res.Write(bytes)
-	return
+	enc := json.NewEncoder(res)
+	enc.SetEscapeHTML(false)
+	return enc.Encode(data)
 }
 
 // XMLDataWriter sets the "Content-Type" response header as "application/xml; charset=UTF-8" and writes the given data in XML format to the response.

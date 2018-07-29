@@ -5,6 +5,8 @@
 [![Coverage Status](https://coveralls.io/repos/github/go-ozzo/ozzo-routing/badge.svg?branch=master)](https://coveralls.io/github/go-ozzo/ozzo-routing?branch=master)
 [![Go Report](https://goreportcard.com/badge/github.com/go-ozzo/ozzo-routing)](https://goreportcard.com/report/github.com/go-ozzo/ozzo-routing)
 
+**You may consider using [golang-restful-starter-kit](https://github.com/qiangxue/golang-restful-starter-kit) to jumpstart your new RESTful applications with ozzo-routing.**
+
 ## Description
 
 ozzo-routing is a Go package that provides high performance and powerful HTTP routing capabilities for Web applications.
@@ -19,11 +21,11 @@ It has the following features:
 * compatible with `http.Handler` and `http.HandlerFunc`
 * ready-to-use handlers sufficient for building RESTful APIs
 
-If you are using [fasthttp](https://github.com/valyala/fasthttp), you may use a similar routing package [fasthttp-routing](https://github.com/qiangxue/fasthttp-routing) which is adpated from ozzo-routing.
+If you are using [fasthttp](https://github.com/valyala/fasthttp), you may use a similar routing package [fasthttp-routing](https://github.com/qiangxue/fasthttp-routing) which is adapted from ozzo-routing.
 
 ## Requirements
 
-Go 1.3 or above.
+Go 1.7 or above.
 
 ## Installation
 
@@ -40,6 +42,8 @@ go get gopkg.in/go-ozzo/ozzo-routing.v1
 ```
 
 ## Getting Started
+
+For a complete RESTful application boilerplate based on ozzo-routing, please refer to the [golang-restful-starter-kit](https://github.com/qiangxue/golang-restful-starter-kit). Below we describe how to create a simple REST API using ozzo-routing.
 
 Create a `server.go` file with the following content:
 
@@ -104,8 +108,6 @@ go run server.go
 ```
 
 You should be able to access URLs such as `http://localhost:8080`, `http://localhost:8080/api/users`.
-
-For a complete RESTful application boilerplate based on ozzo-routing, please refer to the [golang-restful-starter-kit](https://github.com/qiangxue/golang-restful-starter-kit)
 
 
 ### Routes
@@ -421,31 +423,37 @@ router.Use(routing.HTTPHandlerFunc(http.NotFound))
 router.Use(routing.HTTPHandler(http.NotFoundHandler))
 ```
 
-## Usage Examples
+## 3rd-Party Extensions and Code Examples
 
+* [Simple Standard Service Endpoints (SE4)](https://github.com/jdamick/ozzo-se4)
 * [ozzo examples](https://github.com/marshyski/go-ozzo-examples)
 
 ## Benchmarks
+
+*Last updated on Jan 6, 2017*
 
 Ozzo-routing is very fast, thanks to the radix tree data structure and the usage of `sync.Pool` (the idea was
 originally from HttpRouter and Gin). The following table (by running [go-http-routing-benchmark](https://github.com/qiangxue/go-http-routing-benchmark))
 shows how ozzo-routing compares with Gin, HttpRouter, and Martini in performance.
 
 ```
-BenchmarkOzzo_GithubAll            30000     45493 ns/op       0 B/op       0 allocs/op
-BenchmarkHttpRouter_GithubAll      30000     54640 ns/op   13792 B/op     167 allocs/op
-BenchmarkGin_GithubAll             50000     34384 ns/op       0 B/op       0 allocs/op
-BenchmarkMartini_GithubAll           300   4733748 ns/op  228216 B/op    2483 allocs/op
+BenchmarkOzzo_GithubAll                    50000             37989 ns/op               0 B/op          0 allocs/op
+BenchmarkEcho_GithubAll                    20000             91003 ns/op            6496 B/op        203 allocs/op
+BenchmarkGin_GithubAll                     50000             26717 ns/op               0 B/op          0 allocs/op
+BenchmarkHttpRouter_GithubAll              50000             36052 ns/op           13792 B/op        167 allocs/op
+BenchmarkMartini_GithubAll                   300           4162283 ns/op          228216 B/op       2483 allocs/op
 
-BenchmarkOzzo_GPlusAll           1000000      2279 ns/op       0 B/op       0 allocs/op
-BenchmarkHttpRouter_GPlusAll     1000000      2444 ns/op     640 B/op      11 allocs/op
-BenchmarkGin_GPlusAll            1000000      1668 ns/op       0 B/op       0 allocs/op
-BenchmarkMartini_GPlusAll          20000     73015 ns/op   14448 B/op     165 allocs/op
+BenchmarkOzzo_GPlusAll                   1000000              1732 ns/op               0 B/op          0 allocs/op
+BenchmarkEcho_GPlusAll                    300000              4523 ns/op             416 B/op         13 allocs/op
+BenchmarkGin_GPlusAll                    1000000              1171 ns/op               0 B/op          0 allocs/op
+BenchmarkHttpRouter_GPlusAll             1000000              1533 ns/op             640 B/op         11 allocs/op
+BenchmarkMartini_GPlusAll                  20000             75634 ns/op           14448 B/op        165 allocs/op
 
-BenchmarkOzzo_ParseAll            300000      4246 ns/op       0 B/op       0 allocs/op
-BenchmarkHttpRouter_ParseAll      500000      3517 ns/op     640 B/op      16 allocs/op
-BenchmarkGin_ParseAll             500000      3081 ns/op       0 B/op       0 allocs/op
-BenchmarkMartini_ParseAll          10000    110324 ns/op   25600 B/op     276 allocs/op
+BenchmarkOzzo_ParseAll                    500000              3318 ns/op               0 B/op          0 allocs/op
+BenchmarkEcho_ParseAll                    200000              7336 ns/op             832 B/op         26 allocs/op
+BenchmarkGin_ParseAll                    1000000              2075 ns/op               0 B/op          0 allocs/op
+BenchmarkHttpRouter_ParseAll             1000000              2034 ns/op             640 B/op         16 allocs/op
+BenchmarkMartini_ParseAll                  10000            122002 ns/op           25600 B/op        276 allocs/op
 ```
 
 ## Credits

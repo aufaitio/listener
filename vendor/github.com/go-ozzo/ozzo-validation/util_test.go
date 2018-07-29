@@ -6,6 +6,7 @@ package validation
 
 import (
 	"testing"
+	"time"
 
 	"database/sql"
 
@@ -193,9 +194,11 @@ func TestToFloat(t *testing.T) {
 
 func TestIsEmpty(t *testing.T) {
 	var s1 string
-	var s2 string = "a"
+	var s2 = "a"
 	var s3 *string
 	s4 := struct{}{}
+	time1 := time.Now()
+	var time2 time.Time
 	tests := []struct {
 		tag   string
 		value interface{}
@@ -251,6 +254,11 @@ func TestIsEmpty(t *testing.T) {
 		// struct
 		{"t9.1", s4, false},
 		{"t9.2", &s4, false},
+		// time.Time
+		{"t10.1", time1, false},
+		{"t10.2", &time1, false},
+		{"t10.3", time2, true},
+		{"t10.4", &time2, true},
 	}
 
 	for _, test := range tests {
@@ -260,7 +268,7 @@ func TestIsEmpty(t *testing.T) {
 }
 
 func TestIndirect(t *testing.T) {
-	var a int = 100
+	var a = 100
 	var b *int
 	var c *sql.NullInt64
 
