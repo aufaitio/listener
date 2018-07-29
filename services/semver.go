@@ -1,7 +1,7 @@
 package services
 
 import (
-	"github.com/aufaitio/listener/models"
+	"github.com/aufaitio/data-access/models"
 	"github.com/blang/semver"
 )
 

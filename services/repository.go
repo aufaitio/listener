@@ -1,35 +1,18 @@
 package services
 
 import (
+	"github.com/aufaitio/data-access"
+	"github.com/aufaitio/data-access/models"
 	"github.com/aufaitio/listener/app"
-	"github.com/aufaitio/listener/models"
 )
-
-// repositoryDAO specifies the interface of the repository DAO needed by RepositoryService.
-type repositoryDAO interface {
-	// Get returns the repository with the specified repository ID.
-	Get(rs app.RequestScope, id int64) (*models.Repository, error)
-	// Count returns the number of repositories.
-	Count(rs app.RequestScope) (int64, error)
-	// Query returns the list of repositories with the given offset and limit.
-	Query(rs app.RequestScope, offset, limit int) ([]*models.Repository, error)
-	// Query returns the list of repositories with the given offset and limit.
-	QueryByDependency(rs app.RequestScope, dependencyName string) ([]*models.Repository, error)
-	// Create saves a new repository in the storage.
-	Create(rs app.RequestScope, repository *models.Repository) error
-	// Update updates the repository with given ID in the storage.
-	Update(rs app.RequestScope, id int64, repository *models.Repository) error
-	// Delete removes the repository with given ID from the storage.
-	Delete(rs app.RequestScope, id int64) error
-}
 
 // RepositoryService provides services related with repositories.
 type RepositoryService struct {
-	dao repositoryDAO
+	dao access.RepositoryDAO
 }
 
 // NewRepositoryService creates a new RepositoryService with the given repository DAO.
-func NewRepositoryService(dao repositoryDAO) *RepositoryService {
+func NewRepositoryService(dao access.RepositoryDAO) *RepositoryService {
 	return &RepositoryService{dao}
 }
 

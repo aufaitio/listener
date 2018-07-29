@@ -8,9 +8,9 @@ import (
 	"net/http"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/aufaitio/data-access/daos"
 	"github.com/aufaitio/listener/apis"
 	"github.com/aufaitio/listener/app"
-	"github.com/aufaitio/listener/daos"
 	"github.com/aufaitio/listener/errors"
 	"github.com/aufaitio/listener/services"
 	"github.com/docopt/docopt-go"

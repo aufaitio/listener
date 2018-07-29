@@ -3,8 +3,8 @@ package apis
 import (
 	"strconv"
 
+	"github.com/aufaitio/data-access/models"
 	"github.com/aufaitio/listener/app"
-	"github.com/aufaitio/listener/models"
 	"github.com/go-ozzo/ozzo-routing"
 )
 
@@ -15,6 +15,7 @@ type (
 		Query(rs app.RequestScope, offset, limit int) ([]*models.Job, error)
 		Count(rs app.RequestScope) (int64, error)
 		Create(rs app.RequestScope, model *models.Job) (*models.Job, error)
+		CreateJobsFromHook(rs app.RequestScope, hook *models.NpmHook) ([]*models.Job, error)
 		Update(rs app.RequestScope, id int64, model *models.Job) (*models.Job, error)
 		Delete(rs app.RequestScope, id int64) (*models.Job, error)
 	}
@@ -32,7 +33,6 @@ func ServeJobResource(rg *routing.RouteGroup, service jobService, repService rep
 	// Some of these routes are probably pointless but building it like a standard REST service
 	rg.Get("/jobs/<id>", r.get)
 	rg.Get("/jobs", r.query)
-	// Post is technically a post/put
 	rg.Post("/jobs", r.create)
 	rg.Put("/jobs/<id>", r.update)
 	rg.Delete("/jobs/<id>", r.delete)
@@ -68,12 +68,13 @@ func (r *jobResource) query(c *routing.Context) error {
 }
 
 func (r *jobResource) create(c *routing.Context) error {
-	var model models.Job
+	var model models.NpmHook
 	if err := c.Read(&model); err != nil {
 		return err
 	}
-	// Need to query for repositories and filter on semver and then create the job
-	response, err := r.service.Create(app.GetRequestScope(c), &model)
+
+	response, err := r.service.CreateJobsFromHook(app.GetRequestScope(c), &model)
+
 	if err != nil {
 		return err
 	}

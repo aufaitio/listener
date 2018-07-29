@@ -1,36 +1,19 @@
 package services
 
 import (
+	"github.com/aufaitio/data-access"
+	"github.com/aufaitio/data-access/models"
 	"github.com/aufaitio/listener/app"
-	"github.com/aufaitio/listener/models"
 )
-
-// jobDAO specifies the interface of the job DAO needed by JobService.
-type jobDAO interface {
-	// Get returns the job with the specified job ID.
-	Get(rs app.RequestScope, id int64) (*models.Job, error)
-	// GetByName returns the job with the specified job Name.
-	GetByName(rs app.RequestScope, name string) (*models.Job, error)
-	// Count returns the number of repositories.
-	Count(rs app.RequestScope) (int64, error)
-	// Query returns the list of repositories with the given offset and limit.
-	Query(rs app.RequestScope, offset, limit int) ([]*models.Job, error)
-	// Create saves a new job in the storage.
-	Create(rs app.RequestScope, job *models.Job) error
-	// Update updates the job with given ID in the storage.
-	Update(rs app.RequestScope, id int64, job *models.Job) error
-	// Delete removes the job with given ID from the storage.
-	Delete(rs app.RequestScope, id int64) error
-}
 
 // JobService provides services related with repositories.
 type JobService struct {
-	dao    jobDAO
-	repDao repositoryDAO
+	dao    access.JobDAO
+	repDao access.RepositoryDAO
 }
 
 // NewJobService creates a new JobService with the given job DAO.
-func NewJobService(dao jobDAO, repDao repositoryDAO) *JobService {
+func NewJobService(dao access.JobDAO, repDao access.RepositoryDAO) *JobService {
 	return &JobService{dao, repDao}
 }
 
@@ -39,8 +22,8 @@ func (s *JobService) Get(rs app.RequestScope, id int64) (*models.Job, error) {
 	return s.dao.Get(rs, id)
 }
 
-// CreateJobsFromDependency creates a list of jobs from a NPM Hook dependency
-func (s *JobService) CreateJobsFromDependency(rs app.RequestScope, hook *models.NpmHook) ([]*models.Job, error) {
+// CreateJobsFromHook creates a list of jobs from a NPM Hook dependency
+func (s *JobService) CreateJobsFromHook(rs app.RequestScope, hook *models.NpmHook) ([]*models.Job, error) {
 	var jobList []*models.Job
 	repList, err := s.repDao.QueryByDependency(rs, hook.Name)
 
@@ -51,7 +34,8 @@ func (s *JobService) CreateJobsFromDependency(rs app.RequestScope, hook *models.
 	filterRepList := FilterByVersion(repList, hook)
 
 	for _, rep := range filterRepList {
-		job, err := s.dao.GetByName(rs, rep.Name)
+		existingJob, err := s.dao.GetByName(rs, rep.Name)
+		job := existingJob
 
 		if err != nil {
 			return jobList, err
@@ -59,9 +43,14 @@ func (s *JobService) CreateJobsFromDependency(rs app.RequestScope, hook *models.
 
 		publishedDep := models.PublishedDependency{Name: hook.Name, Version: hook.Version}
 
-		if job.Name != rep.Name {
+		if existingJob.Name != rep.Name || existingJob.State == models.InProgress {
 			publishedDepList := []*models.PublishedDependency{&publishedDep}
 			job = models.NewJobFromRepository(rep, publishedDepList)
+
+			// Jobs in progress that get new dependencies, get a new job that is locked until it is complete.
+			if existingJob.State == models.InProgress {
+				existingJob.State = models.Locked
+			}
 		} else {
 			job.Dependencies = append(job.Dependencies, &publishedDep)
 		}

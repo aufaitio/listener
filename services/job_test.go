@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/aufaitio/listener/app"
-	"github.com/aufaitio/listener/models"
+	"github.com/aufaitio/data-access"
+	"github.com/aufaitio/data-access/models"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -99,7 +99,7 @@ func createJob(name string, depName string, depVersion string) *models.Job {
 	}
 }
 
-func newMockJobDAO() jobDAO {
+func newMockJobDAO() access.JobDAO {
 	jobList := []*models.Job{
 		createJob("aaa", "test", "1.2.3"),
 		createJob("bbb", "test", "2.2.3"),
@@ -117,7 +117,7 @@ type mockJobDAO struct {
 	records []*models.Job
 }
 
-func (m *mockJobDAO) Get(rs app.RequestScope, id int64) (*models.Job, error) {
+func (m *mockJobDAO) Get(rs access.Scope, id int64) (*models.Job, error) {
 	for _, record := range m.records {
 		if record.ID == id {
 			return record, nil
@@ -126,7 +126,7 @@ func (m *mockJobDAO) Get(rs app.RequestScope, id int64) (*models.Job, error) {
 	return nil, errors.New("not found")
 }
 
-func (m *mockJobDAO) GetByName(rs app.RequestScope, name string) (*models.Job, error) {
+func (m *mockJobDAO) GetByName(rs access.Scope, name string) (*models.Job, error) {
 	for _, record := range m.records {
 		if record.Name == name {
 			return record, nil
@@ -135,15 +135,15 @@ func (m *mockJobDAO) GetByName(rs app.RequestScope, name string) (*models.Job, e
 	return nil, errors.New("not found")
 }
 
-func (m *mockJobDAO) Query(rs app.RequestScope, offset, limit int) ([]*models.Job, error) {
+func (m *mockJobDAO) Query(rs access.Scope, offset, limit int) ([]*models.Job, error) {
 	return m.records[offset : offset+limit], nil
 }
 
-func (m *mockJobDAO) Count(rs app.RequestScope) (int64, error) {
+func (m *mockJobDAO) Count(rs access.Scope) (int64, error) {
 	return int64(len(m.records)), nil
 }
 
-func (m *mockJobDAO) Create(rs app.RequestScope, job *models.Job) error {
+func (m *mockJobDAO) Create(rs access.Scope, job *models.Job) error {
 	if job.ID != 0 {
 		return errors.New("Id cannot be set")
 	}
@@ -153,7 +153,7 @@ func (m *mockJobDAO) Create(rs app.RequestScope, job *models.Job) error {
 	return nil
 }
 
-func (m *mockJobDAO) Update(rs app.RequestScope, id int64, job *models.Job) error {
+func (m *mockJobDAO) Update(rs access.Scope, id int64, job *models.Job) error {
 	job.ID = id
 	for i, record := range m.records {
 		if record.ID == id {
@@ -164,7 +164,7 @@ func (m *mockJobDAO) Update(rs app.RequestScope, id int64, job *models.Job) erro
 	return errors.New("not found")
 }
 
-func (m *mockJobDAO) Delete(rs app.RequestScope, id int64) error {
+func (m *mockJobDAO) Delete(rs access.Scope, id int64) error {
 	for i, record := range m.records {
 		if record.ID == id {
 			m.records = append(m.records[:i], m.records[i+1:]...)

@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/aufaitio/listener/app"
-	"github.com/aufaitio/listener/models"
+	"github.com/aufaitio/data-access"
+	"github.com/aufaitio/data-access/models"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -99,7 +99,7 @@ func createRepository(name string, depName string, depVersion string, installed 
 	}
 }
 
-func newMockRepositoryDAO() repositoryDAO {
+func newMockRepositoryDAO() access.RepositoryDAO {
 	repositoryList := []*models.Repository{
 		createRepository("aaa", "test", "1.2.3", "1.0.0"),
 		createRepository("bbb", "test", "2.2.3", "2.2.3"),
@@ -116,7 +116,7 @@ type mockRepositoryDAO struct {
 	records []*models.Repository
 }
 
-func (m *mockRepositoryDAO) Get(rs app.RequestScope, id int64) (*models.Repository, error) {
+func (m *mockRepositoryDAO) Get(rs access.Scope, id int64) (*models.Repository, error) {
 	for _, record := range m.records {
 		if record.ID == id {
 			return record, nil
@@ -125,19 +125,19 @@ func (m *mockRepositoryDAO) Get(rs app.RequestScope, id int64) (*models.Reposito
 	return nil, errors.New("not found")
 }
 
-func (m *mockRepositoryDAO) Query(rs app.RequestScope, offset, limit int) ([]*models.Repository, error) {
+func (m *mockRepositoryDAO) Query(rs access.Scope, offset, limit int) ([]*models.Repository, error) {
 	return m.records[offset : offset+limit], nil
 }
 
-func (m *mockRepositoryDAO) QueryByDependency(rs app.RequestScope, dependencyName string) ([]*models.Repository, error) {
+func (m *mockRepositoryDAO) QueryByDependency(rs access.Scope, dependencyName string) ([]*models.Repository, error) {
 	return []*models.Repository{}, nil
 }
 
-func (m *mockRepositoryDAO) Count(rs app.RequestScope) (int64, error) {
+func (m *mockRepositoryDAO) Count(rs access.Scope) (int64, error) {
 	return int64(len(m.records)), nil
 }
 
-func (m *mockRepositoryDAO) Create(rs app.RequestScope, repository *models.Repository) error {
+func (m *mockRepositoryDAO) Create(rs access.Scope, repository *models.Repository) error {
 	if repository.ID != 0 {
 		return errors.New("Id cannot be set")
 	}
@@ -147,7 +147,7 @@ func (m *mockRepositoryDAO) Create(rs app.RequestScope, repository *models.Repos
 	return nil
 }
 
-func (m *mockRepositoryDAO) Update(rs app.RequestScope, id int64, repository *models.Repository) error {
+func (m *mockRepositoryDAO) Update(rs access.Scope, id int64, repository *models.Repository) error {
 	repository.ID = id
 	for i, record := range m.records {
 		if record.ID == id {
@@ -158,7 +158,7 @@ func (m *mockRepositoryDAO) Update(rs app.RequestScope, id int64, repository *mo
 	return errors.New("not found")
 }
 
-func (m *mockRepositoryDAO) Delete(rs app.RequestScope, id int64) error {
+func (m *mockRepositoryDAO) Delete(rs access.Scope, id int64) error {
 	for i, record := range m.records {
 		if record.ID == id {
 			m.records = append(m.records[:i], m.records[i+1:]...)
