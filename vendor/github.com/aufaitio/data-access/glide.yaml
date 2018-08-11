@@ -1,9 +1,0 @@
-package: github.com/aufaitio/data-access
-import:
-- package: github.com/go-ozzo/ozzo-validation
-  version: ~3.4.0
-- package: github.com/mongodb/mongo-go-driver
-  version: ~0.0.10
-  subpackages:
-  - bson
-  - mongo
