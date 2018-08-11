@@ -2,12 +2,23 @@ package services
 
 import (
 	"errors"
-	"testing"
-
 	"github.com/aufaitio/data-access"
 	"github.com/aufaitio/data-access/models"
+	"github.com/aufaitio/listener/app"
+	"github.com/mongodb/mongo-go-driver/mongo"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"testing"
 )
+
+type MockRequestScope struct {
+	mock.Mock
+	app.RequestScope
+}
+
+func (m MockRequestScope) DB() *mongo.Database {
+	return &mongo.Database{}
+}
 
 func TestNewJobService(t *testing.T) {
 	dao := newMockJobDAO()
@@ -17,32 +28,32 @@ func TestNewJobService(t *testing.T) {
 
 func TestJobService_Get(t *testing.T) {
 	s := NewJobService(newMockJobDAO(), newMockRepositoryDAO())
-	job, err := s.Get(nil, 1)
+	job, err := s.Get(new(MockRequestScope), 1)
 	if assert.Nil(t, err) && assert.NotNil(t, job) {
 		assert.Equal(t, "aaa", job.Name)
 	}
 
-	job, err = s.Get(nil, 100)
+	job, err = s.Get(new(MockRequestScope), 100)
 	assert.NotNil(t, err)
 }
 
 func TestJobService_Create(t *testing.T) {
 	s := NewJobService(newMockJobDAO(), newMockRepositoryDAO())
-	job, err := s.Create(nil, createJob("ddd", "testing", "1.1.1"))
+	job, err := s.Create(new(MockRequestScope), createJob("ddd", "testing", "1.1.1"))
 	if assert.Nil(t, err) && assert.NotNil(t, job) {
 		assert.Equal(t, int64(4), job.ID)
 		assert.Equal(t, "ddd", job.Name)
 	}
 
 	// dao error
-	_, err = s.Create(nil, &models.Job{
+	_, err = s.Create(new(MockRequestScope), &models.Job{
 		ID:   100,
 		Name: "ddd",
 	})
 	assert.NotNil(t, err)
 
 	// validation error
-	_, err = s.Create(nil, &models.Job{
+	_, err = s.Create(new(MockRequestScope), &models.Job{
 		Name: "",
 	})
 	assert.NotNil(t, err)
@@ -50,20 +61,20 @@ func TestJobService_Create(t *testing.T) {
 
 func TestJobService_Update(t *testing.T) {
 	s := NewJobService(newMockJobDAO(), newMockRepositoryDAO())
-	job, err := s.Update(nil, 2, createJob("ddd", "a", "1.2.4"))
+	job, err := s.Update(new(MockRequestScope), 2, createJob("ddd", "a", "1.2.4"))
 	if assert.Nil(t, err) && assert.NotNil(t, job) {
 		assert.Equal(t, int64(2), job.ID)
 		assert.Equal(t, "ddd", job.Name)
 	}
 
 	// dao error
-	_, err = s.Update(nil, 100, &models.Job{
+	_, err = s.Update(new(MockRequestScope), 100, &models.Job{
 		Name: "ddd",
 	})
 	assert.NotNil(t, err)
 
 	// validation error
-	_, err = s.Update(nil, 2, &models.Job{
+	_, err = s.Update(new(MockRequestScope), 2, &models.Job{
 		Name: "",
 	})
 	assert.NotNil(t, err)
@@ -71,19 +82,19 @@ func TestJobService_Update(t *testing.T) {
 
 func TestJobService_Delete(t *testing.T) {
 	s := NewJobService(newMockJobDAO(), newMockRepositoryDAO())
-	job, err := s.Delete(nil, 2)
+	job, err := s.Delete(new(MockRequestScope), 2)
 	if assert.Nil(t, err) && assert.NotNil(t, job) {
 		assert.Equal(t, int64(2), job.ID)
 		assert.Equal(t, "bbb", job.Name)
 	}
 
-	_, err = s.Delete(nil, 2)
+	_, err = s.Delete(new(MockRequestScope), 2)
 	assert.NotNil(t, err)
 }
 
 func TestJobService_Query(t *testing.T) {
 	s := NewJobService(newMockJobDAO(), newMockRepositoryDAO())
-	result, err := s.Query(nil, 1, 2)
+	result, err := s.Query(new(MockRequestScope), 1, 2)
 	if assert.Nil(t, err) {
 		assert.Equal(t, 2, len(result))
 	}
@@ -117,7 +128,7 @@ type mockJobDAO struct {
 	records []*models.Job
 }
 
-func (m *mockJobDAO) Get(rs access.Scope, id int64) (*models.Job, error) {
+func (m *mockJobDAO) Get(db *mongo.Database, id int64) (*models.Job, error) {
 	for _, record := range m.records {
 		if record.ID == id {
 			return record, nil
@@ -126,7 +137,7 @@ func (m *mockJobDAO) Get(rs access.Scope, id int64) (*models.Job, error) {
 	return nil, errors.New("not found")
 }
 
-func (m *mockJobDAO) GetByName(rs access.Scope, name string) (*models.Job, error) {
+func (m *mockJobDAO) GetByName(db *mongo.Database, name string) (*models.Job, error) {
 	for _, record := range m.records {
 		if record.Name == name {
 			return record, nil
@@ -135,15 +146,15 @@ func (m *mockJobDAO) GetByName(rs access.Scope, name string) (*models.Job, error
 	return nil, errors.New("not found")
 }
 
-func (m *mockJobDAO) Query(rs access.Scope, offset, limit int) ([]*models.Job, error) {
+func (m *mockJobDAO) Query(db *mongo.Database, offset, limit int) ([]*models.Job, error) {
 	return m.records[offset : offset+limit], nil
 }
 
-func (m *mockJobDAO) Count(rs access.Scope) (int64, error) {
+func (m *mockJobDAO) Count(db *mongo.Database) (int64, error) {
 	return int64(len(m.records)), nil
 }
 
-func (m *mockJobDAO) Create(rs access.Scope, job *models.Job) error {
+func (m *mockJobDAO) Create(db *mongo.Database, job *models.Job) error {
 	if job.ID != 0 {
 		return errors.New("Id cannot be set")
 	}
@@ -153,7 +164,7 @@ func (m *mockJobDAO) Create(rs access.Scope, job *models.Job) error {
 	return nil
 }
 
-func (m *mockJobDAO) Update(rs access.Scope, id int64, job *models.Job) error {
+func (m *mockJobDAO) Update(db *mongo.Database, id int64, job *models.Job) error {
 	job.ID = id
 	for i, record := range m.records {
 		if record.ID == id {
@@ -164,7 +175,7 @@ func (m *mockJobDAO) Update(rs access.Scope, id int64, job *models.Job) error {
 	return errors.New("not found")
 }
 
-func (m *mockJobDAO) Delete(rs access.Scope, id int64) error {
+func (m *mockJobDAO) Delete(db *mongo.Database, id int64) error {
 	for i, record := range m.records {
 		if record.ID == id {
 			m.records = append(m.records[:i], m.records[i+1:]...)
