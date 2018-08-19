@@ -58,7 +58,7 @@ func (s *RepositoryService) Patch(rs app.RequestScope, repoList []*models.Reposi
 	var repoNameList []string
 
 	for _, repo := range repoList {
-		append(repoNameList, repoList.Name)
+		repoNameList = append(repoNameList, repoList.Name)
 	}
 
 	return s.dao.QueryByName(rs.DB(), repoNameList)
