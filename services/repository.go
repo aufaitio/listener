@@ -16,9 +16,9 @@ func NewRepositoryService(dao access.RepositoryDAO) *RepositoryService {
 	return &RepositoryService{dao}
 }
 
-// Get returns the repository with the specified the repository ID.
-func (s *RepositoryService) Get(rs app.RequestScope, id int64) (*models.Repository, error) {
-	return s.dao.Get(rs.DB(), id)
+// Get returns the repository with the specified the repository name.
+func (s *RepositoryService) Get(rs app.RequestScope, name string) (*models.Repository, error) {
+	return s.dao.Get(rs.DB(), name)
 }
 
 // Create creates a new repository.
@@ -32,24 +32,45 @@ func (s *RepositoryService) Create(rs app.RequestScope, model *models.Repository
 	return s.dao.Get(rs.DB(), model.ID)
 }
 
-// Update updates the repository with the specified ID.
-func (s *RepositoryService) Update(rs app.RequestScope, id int64, model *models.Repository) (*models.Repository, error) {
+// Update updates the repository with the specified name.
+func (s *RepositoryService) Update(rs app.RequestScope, name string, model *models.Repository) (*models.Repository, error) {
 	if err := model.Validate(); err != nil {
 		return nil, err
 	}
-	if err := s.dao.Update(rs.DB(), id, model); err != nil {
+	if err := s.dao.Update(rs.DB(), name, model); err != nil {
 		return nil, err
 	}
-	return s.dao.Get(rs.DB(), id)
+	return s.dao.Get(rs.DB(), name)
 }
 
-// Delete deletes the repository with the specified ID.
-func (s *RepositoryService) Delete(rs app.RequestScope, id int64) (*models.Repository, error) {
-	repository, err := s.dao.Get(rs.DB(), id)
+// Patch bulk update of repositories
+func (s *RepositoryService) Patch(rs app.RequestScope, repoList []*models.Repository) ([]*models.Repository, error) {
+	for _, model := range repoList {
+		if err := model.Validate(); err != nil {
+			return nil, err
+		}
+	}
+
+	if err := s.dao.Patch(rs.DB(), repoList); err != nil {
+		return nil, err
+	}
+
+	var repoNameList []string
+
+	for _, repo := range repoList {
+		append(repoNameList, repoList.Name)
+	}
+
+	return s.dao.QueryByName(rs.DB(), repoNameList)
+}
+
+// Delete deletes the repository with the specified name.
+func (s *RepositoryService) Delete(rs app.RequestScope, name string) (*models.Repository, error) {
+	repository, err := s.dao.Get(rs.DB(), name)
 	if err != nil {
 		return nil, err
 	}
-	err = s.dao.Delete(rs.DB(), id)
+	err = s.dao.Delete(rs.DB(), name)
 	return repository, err
 }
 

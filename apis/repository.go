@@ -3,20 +3,21 @@ package apis
 import (
 	"strconv"
 
+	"github.com/go-ozzo/ozzo-routing"
 	"github.com/quantumew/data-access/models"
 	"github.com/quantumew/listener/app"
-	"github.com/go-ozzo/ozzo-routing"
 )
 
 type (
 	// repositoryService specifies the interface for the repository service needed by repositoryResource.
 	repositoryService interface {
-		Get(rs app.RequestScope, id int64) (*models.Repository, error)
+		Get(rs app.RequestScope, name string) (*models.Repository, error)
 		Query(rs app.RequestScope, offset, limit int) ([]*models.Repository, error)
 		Count(rs app.RequestScope) (int64, error)
 		Create(rs app.RequestScope, model *models.Repository) (*models.Repository, error)
-		Update(rs app.RequestScope, id int64, model *models.Repository) (*models.Repository, error)
-		Delete(rs app.RequestScope, id int64) (*models.Repository, error)
+		Update(rs app.RequestScope, name string, model *models.Repository) (*models.Repository, error)
+		Patch(rs app.RequestScope, modelList []*models.Repository) ([]*models.Repository, error)
+		Delete(rs app.RequestScope, name string) (*models.Repository, error)
 	}
 
 	// repositoryResource defines the handlers for the CRUD APIs.
@@ -29,21 +30,18 @@ type (
 func ServeRepositoryResource(rg *routing.RouteGroup, service repositoryService) {
 	r := &repositoryResource{service}
 	// Some of these routes are probably pointless but building it like a standard REST service
-	rg.Get("/repositories/<id>", r.get)
+	rg.Get("/repositories/<name>", r.get)
 	rg.Get("/repositories", r.query)
-	// Sort of a post/put
 	rg.Post("/repositories", r.create)
-	rg.Put("/repositories/<id>", r.update)
-	rg.Delete("/repositories/<id>", r.delete)
+	rg.Put("/repositories/<name>", r.update)
+	rg.Patch("/repositories", r.patch)
+	rg.Delete("/repositories/<name>", r.delete)
 }
 
 func (r *repositoryResource) get(c *routing.Context) error {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil {
-		return err
-	}
+	name := c.Param("name")
 
-	response, err := r.service.Get(app.GetRequestScope(c), id)
+	response, err := r.service.Get(app.GetRequestScope(c), name)
 	if err != nil {
 		return err
 	}
@@ -80,14 +78,10 @@ func (r *repositoryResource) create(c *routing.Context) error {
 }
 
 func (r *repositoryResource) update(c *routing.Context) error {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil {
-		return err
-	}
-
+	name := c.Param("name")
 	rs := app.GetRequestScope(c)
 
-	model, err := r.service.Get(rs, id)
+	model, err := r.service.Get(rs, name)
 	if err != nil {
 		return err
 	}
@@ -96,7 +90,7 @@ func (r *repositoryResource) update(c *routing.Context) error {
 		return err
 	}
 
-	response, err := r.service.Update(rs, id, model)
+	response, err := r.service.Update(rs, name, model)
 	if err != nil {
 		return err
 	}
@@ -104,13 +98,26 @@ func (r *repositoryResource) update(c *routing.Context) error {
 	return c.Write(response)
 }
 
-func (r *repositoryResource) delete(c *routing.Context) error {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+func (r *repositoryResource) patch(c *routing.Context) error {
+	rs := app.GetRequestScope(c)
+	var repoList []*models.Repository
+
+	if err := c.Read(repoList); err != nil {
+		return err
+	}
+
+	responseList, err := r.service.Patch(rs, repoList)
+
 	if err != nil {
 		return err
 	}
 
-	response, err := r.service.Delete(app.GetRequestScope(c), id)
+	return c.Write(responseList)
+}
+
+func (r *repositoryResource) delete(c *routing.Context) error {
+	name := c.Param("name")
+	response, err := r.service.Delete(app.GetRequestScope(c), name)
 	if err != nil {
 		return err
 	}
