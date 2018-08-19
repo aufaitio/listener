@@ -1,7 +1,7 @@
 package services
 
 import (
-	"github.com/aufaitio/data-access/models"
+	"github.com/quantumew/data-access/models"
 	"github.com/blang/semver"
 )
 

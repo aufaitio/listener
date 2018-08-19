@@ -1,9 +1,9 @@
 package services
 
 import (
-	"github.com/aufaitio/data-access"
-	"github.com/aufaitio/data-access/models"
-	"github.com/aufaitio/listener/app"
+	"github.com/quantumew/data-access"
+	"github.com/quantumew/data-access/models"
+	"github.com/quantumew/listener/app"
 )
 
 // JobService provides services related with repositories.

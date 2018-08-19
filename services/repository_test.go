@@ -5,8 +5,8 @@ import (
 	"github.com/mongodb/mongo-go-driver/mongo"
 	"testing"
 
-	"github.com/aufaitio/data-access"
-	"github.com/aufaitio/data-access/models"
+	"github.com/quantumew/data-access"
+	"github.com/quantumew/data-access/models"
 	"github.com/stretchr/testify/assert"
 )
 

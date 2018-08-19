@@ -3,8 +3,8 @@ package apis
 import (
 	"strconv"
 
-	"github.com/aufaitio/data-access/models"
-	"github.com/aufaitio/listener/app"
+	"github.com/quantumew/data-access/models"
+	"github.com/quantumew/listener/app"
 	"github.com/go-ozzo/ozzo-routing"
 )
 

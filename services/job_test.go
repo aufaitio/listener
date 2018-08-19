@@ -2,9 +2,9 @@ package services
 
 import (
 	"errors"
-	"github.com/aufaitio/data-access"
-	"github.com/aufaitio/data-access/models"
-	"github.com/aufaitio/listener/app"
+	"github.com/quantumew/data-access"
+	"github.com/quantumew/data-access/models"
+	"github.com/quantumew/listener/app"
 	"github.com/mongodb/mongo-go-driver/mongo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
