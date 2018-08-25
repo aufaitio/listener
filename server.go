@@ -8,15 +8,15 @@ import (
 	"net/http"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/docopt/docopt-go"
+	"github.com/go-ozzo/ozzo-routing"
+	"github.com/go-ozzo/ozzo-routing/content"
+	"github.com/go-ozzo/ozzo-routing/cors"
 	"github.com/quantumew/data-access/daos"
 	"github.com/quantumew/listener/apis"
 	"github.com/quantumew/listener/app"
 	"github.com/quantumew/listener/errors"
 	"github.com/quantumew/listener/services"
-	"github.com/docopt/docopt-go"
-	"github.com/go-ozzo/ozzo-routing"
-	"github.com/go-ozzo/ozzo-routing/content"
-	"github.com/go-ozzo/ozzo-routing/cors"
 )
 
 func main() {

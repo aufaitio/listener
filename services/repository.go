@@ -29,7 +29,7 @@ func (s *RepositoryService) Create(rs app.RequestScope, model *models.Repository
 	if err := s.dao.Create(rs.DB(), model); err != nil {
 		return nil, err
 	}
-	return s.dao.Get(rs.DB(), model.ID)
+	return s.dao.Get(rs.DB(), model.Name)
 }
 
 // Update updates the repository with the specified name.
@@ -58,7 +58,7 @@ func (s *RepositoryService) Patch(rs app.RequestScope, repoList []*models.Reposi
 	var repoNameList []string
 
 	for _, repo := range repoList {
-		repoNameList = append(repoNameList, repoList.Name)
+		repoNameList = append(repoNameList, repo.Name)
 	}
 
 	return s.dao.QueryByName(rs.DB(), repoNameList)

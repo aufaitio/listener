@@ -1,8 +1,6 @@
 package apis
 
 import (
-	"strconv"
-
 	"github.com/go-ozzo/ozzo-routing"
 	"github.com/quantumew/data-access/models"
 	"github.com/quantumew/listener/app"

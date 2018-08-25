@@ -18,8 +18,8 @@ func NewJobService(dao access.JobDAO, repDao access.RepositoryDAO) *JobService {
 }
 
 // Get returns the job with the specified the job ID.
-func (s *JobService) Get(rs app.RequestScope, id int64) (*models.Job, error) {
-	return s.dao.Get(rs.DB(), id)
+func (s *JobService) Get(rs app.RequestScope, name string) (*models.Job, error) {
+	return s.dao.Get(rs.DB(), name)
 }
 
 // CreateJobsFromHook creates a list of jobs from a NPM Hook dependency
@@ -70,27 +70,27 @@ func (s *JobService) Create(rs app.RequestScope, model *models.Job) (*models.Job
 	if err := s.dao.Create(rs.DB(), model); err != nil {
 		return nil, err
 	}
-	return s.dao.Get(rs.DB(), model.ID)
+	return s.dao.Get(rs.DB(), model.Name)
 }
 
 // Update updates the job with the specified ID.
-func (s *JobService) Update(rs app.RequestScope, id int64, model *models.Job) (*models.Job, error) {
+func (s *JobService) Update(rs app.RequestScope, name string, model *models.Job) (*models.Job, error) {
 	if err := model.Validate(); err != nil {
 		return nil, err
 	}
-	if err := s.dao.Update(rs.DB(), id, model); err != nil {
+	if err := s.dao.Update(rs.DB(), name, model); err != nil {
 		return nil, err
 	}
-	return s.dao.Get(rs.DB(), id)
+	return s.dao.Get(rs.DB(), model.Name)
 }
 
 // Delete deletes the job with the specified ID.
-func (s *JobService) Delete(rs app.RequestScope, id int64) (*models.Job, error) {
-	job, err := s.dao.Get(rs.DB(), id)
+func (s *JobService) Delete(rs app.RequestScope, name string) (*models.Job, error) {
+	job, err := s.dao.Get(rs.DB(), name)
 	if err != nil {
 		return nil, err
 	}
-	err = s.dao.Delete(rs.DB(), id)
+	err = s.dao.Delete(rs.DB(), name)
 	return job, err
 }
 
