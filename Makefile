@@ -2,6 +2,7 @@ MAIN_VERSION:=$(shell git describe --abbrev=0 --tags || echo "0.1.0")
 VERSION:=${MAIN_VERSION}\#$(shell git log -n 1 --pretty=format:"%h")
 PACKAGES:=$(shell go list ./... | sed -n '1!p' | grep -v /vendor/)
 LDFLAGS:=-ldflags "-X github.com/aufaitio/listener/app.Version=${VERSION}"
+TAG:=aufait-listener
 
 default: run
 
@@ -21,8 +22,10 @@ run:
 	go run ${LDFLAGS} server.go
 
 build: clean
-	go build ${LDFLAGS} -a -o server server.go
-	docker listener --tag aufait-listener .
+	go build ${LDFLAGS} -a -o "builds/${GOOS}/listener" server.go
+
+docker:
+	docker build --cache-from ${TAG}:latest --tag ${TAG} .
 
 clean:
 	rm -rf server coverage.out coverage-all.out

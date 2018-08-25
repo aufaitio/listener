@@ -1,5 +1,9 @@
-FROM node:8-alpine
+FROM ubuntu:18.04
 MAINTAINER andygertjejansen@gmail.com
 EXPOSE 8080
-CMD ./listener
-ADD listener .
+RUN mkdir -p /opt/app/config
+RUN apt-get update && apt-get install -y nodejs npm
+WORKDIR /opt/app
+COPY builds/linux/listener /opt/app
+COPY config/* /opt/app/config/
+CMD ["/opt/app/listener"]
