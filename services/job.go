@@ -73,7 +73,7 @@ func (s *JobService) Create(rs app.RequestScope, model *models.Job) (*models.Job
 	return s.dao.Get(rs.DB(), model.Name)
 }
 
-// Update updates the job with the specified ID.
+// Update updates the job with the specified name.
 func (s *JobService) Update(rs app.RequestScope, name string, model *models.Job) (*models.Job, error) {
 	if err := model.Validate(); err != nil {
 		return nil, err
@@ -84,7 +84,7 @@ func (s *JobService) Update(rs app.RequestScope, name string, model *models.Job)
 	return s.dao.Get(rs.DB(), model.Name)
 }
 
-// Delete deletes the job with the specified ID.
+// Delete deletes the job with the specified name.
 func (s *JobService) Delete(rs app.RequestScope, name string) (*models.Job, error) {
 	job, err := s.dao.Get(rs.DB(), name)
 	if err != nil {

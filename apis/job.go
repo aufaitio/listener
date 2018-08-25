@@ -1,23 +1,21 @@
 package apis
 
 import (
-	"strconv"
-
+	"github.com/go-ozzo/ozzo-routing"
 	"github.com/quantumew/data-access/models"
 	"github.com/quantumew/listener/app"
-	"github.com/go-ozzo/ozzo-routing"
 )
 
 type (
 	// jobService specifies the interface for the repository service needed by jobResource.
 	jobService interface {
-		Get(rs app.RequestScope, id int64) (*models.Job, error)
+		Get(rs app.RequestScope, name string) (*models.Job, error)
 		Query(rs app.RequestScope, offset, limit int) ([]*models.Job, error)
 		Count(rs app.RequestScope) (int64, error)
 		Create(rs app.RequestScope, model *models.Job) (*models.Job, error)
 		CreateJobsFromHook(rs app.RequestScope, hook *models.NpmHook) ([]*models.Job, error)
-		Update(rs app.RequestScope, id int64, model *models.Job) (*models.Job, error)
-		Delete(rs app.RequestScope, id int64) (*models.Job, error)
+		Update(rs app.RequestScope, name string, model *models.Job) (*models.Job, error)
+		Delete(rs app.RequestScope, name string) (*models.Job, error)
 	}
 
 	// jobResource defines the handlers for the CRUD APIs.
@@ -31,20 +29,15 @@ type (
 func ServeJobResource(rg *routing.RouteGroup, service jobService, repService repositoryService) {
 	r := &jobResource{service, repService}
 	// Some of these routes are probably pointless but building it like a standard REST service
-	rg.Get("/jobs/<id>", r.get)
+	rg.Get("/jobs/<name>", r.get)
 	rg.Get("/jobs", r.query)
 	rg.Post("/jobs", r.create)
-	rg.Put("/jobs/<id>", r.update)
-	rg.Delete("/jobs/<id>", r.delete)
+	rg.Put("/jobs/<name>", r.update)
+	rg.Delete("/jobs/name>", r.delete)
 }
 
 func (r *jobResource) get(c *routing.Context) error {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil {
-		return err
-	}
-
-	response, err := r.service.Get(app.GetRequestScope(c), id)
+	response, err := r.service.Get(app.GetRequestScope(c), c.Param("name"))
 	if err != nil {
 		return err
 	}
@@ -83,14 +76,10 @@ func (r *jobResource) create(c *routing.Context) error {
 }
 
 func (r *jobResource) update(c *routing.Context) error {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil {
-		return err
-	}
-
+	name := c.Param("name")
 	rs := app.GetRequestScope(c)
 
-	model, err := r.service.Get(rs, id)
+	model, err := r.service.Get(rs, name)
 	if err != nil {
 		return err
 	}
@@ -99,7 +88,7 @@ func (r *jobResource) update(c *routing.Context) error {
 		return err
 	}
 
-	response, err := r.service.Update(rs, id, model)
+	response, err := r.service.Update(rs, name, model)
 	if err != nil {
 		return err
 	}
@@ -108,12 +97,7 @@ func (r *jobResource) update(c *routing.Context) error {
 }
 
 func (r *jobResource) delete(c *routing.Context) error {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil {
-		return err
-	}
-
-	response, err := r.service.Delete(app.GetRequestScope(c), id)
+	response, err := r.service.Delete(app.GetRequestScope(c), c.Param("name"))
 	if err != nil {
 		return err
 	}

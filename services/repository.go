@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"github.com/quantumew/data-access"
 	"github.com/quantumew/data-access/models"
 	"github.com/quantumew/listener/app"
@@ -51,8 +52,9 @@ func (s *RepositoryService) Patch(rs app.RequestScope, repoList []*models.Reposi
 		}
 	}
 
-	if err := s.dao.Patch(rs.DB(), repoList); err != nil {
-		return nil, err
+	// If all fo them error we need to 500, if some error we need to provide a way to communicate that.
+	if errList := s.dao.Patch(rs.DB(), repoList); len(errList) == len(repoList) {
+		return nil, fmt.Errorf("Failed to update provided repositories")
 	}
 
 	var repoNameList []string
