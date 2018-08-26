@@ -28,4 +28,4 @@ docker:
 	docker build --cache-from ${TAG}:latest --tag ${TAG} .
 
 clean:
-	rm -rf server coverage.out coverage-all.out
+	rm -rf coverage.out coverage-all.out
